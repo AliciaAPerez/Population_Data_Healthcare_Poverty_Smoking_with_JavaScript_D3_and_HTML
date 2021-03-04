@@ -112,5 +112,72 @@ d3.csv("assets/data/data.csv").then(function(data, err) {
     chartgroup.append("g")
         .call(leftAxis);
 
-    
+    let circlesGroup = chartGroup.selectAll("circle")
+        .data(data)
+        .enter()
+        .append("circle")
+        .attr("cx", d => xLinearScale(d[chosenXAxis]))
+        .attr("cy", d => yLinearScale(d.poverty))
+        .attr("r", 20)
+        .attr("fill", "pink")
+        .attr("opacity", ".5");
+
+    let labelsGroup = chartGroup.append("g")
+        .attr("transform", `translate(${width / 2}, ${height + 20})`);
+
+    let povertylabel = labelsGroup.append("text")
+        .attr("x", 0)
+        .attr("y", 20)
+        .attr("value", "poverty")
+        .classed("active", true)
+        .text("Poverty");
+
+    let healthcareLabel = labelsGroup.append("text")
+        .attr("x", 0)
+        .attr("y", 40)
+        .attr("value", "healthcare")
+        .classed("inactive", true)
+        .text("Healthcare");
+
+    chartGroup.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x", 0 - (height / 2))
+        .attr("dy", "1em")
+        .classed("axis-text", true)
+        .text("Healthcare");
+
+    let circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
+
+    labelsGroup.selectAll("text")
+    .on("click", function() {
+        let value = d3.select(this).attr("value");
+        if (value !== chosenXAxis) {
+        chosenXAxis = value;
+        xLinearScale = xScale(hairData, chosenXAxis);
+        xAxis = renderAxes(xLinearScale, xAxis);
+        circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis);
+        circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
+
+        
+        if (chosenXAxis === "num_albums") {
+            albumsLabel
+                .classed("active", true)
+                .classed("inactive", false);
+            hairLengthLabel
+                .classed("active", false)
+                .classed("inactive", true);
+        }
+        else {
+            albumsLabel
+                .classed("active", false)
+                .classed("inactive", true);
+            hairLengthLabel
+                .classed("active", true)
+                .classed("inactive", false);
+        }
+        }
+    });
+}).catch(function(error) {
+    console.log(error);
 })
