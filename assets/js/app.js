@@ -22,7 +22,7 @@ let svg = d3
 let chartgroup = svg.append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-let chosenXaxis = "proverty";
+let chosenXaxis = "poverty";
     
 function xScale(data, chosenXaxis) {
     let xLinearScale = d3.scaleLinear()
@@ -53,10 +53,64 @@ function renderCircles(circlesGroup, newXScale, chosenXaxis) {
     return circlesGroup;
 }
 
+function updateToolTip(chosenXaxis, circlesGroup) {
+    let label;
+    if (chosenXaxis === "poverty") {
+        label = "Poverty";
+    }
+    else {
+        label = "Healthcare";
+    }
 
+    let toolTip = d3.tip()
+        .attr("class", "tooltip")
+        .offset([80,-60])
+        .html(function(d) {
+            return (`${d.rockband}<br>${label} ${d[chosenXaxis]}`);
+        });
+    
+    circlesGroup.call(toolTip)
+
+    circlesGroup.on("mouseover", function(data) {
+        toolTip.show(data);
+    })
+        .on("mouseout", function(daa, index) {
+            toolTip.hide(data);
+        });
+    return circlesGroup;
+}
 
 
 // loading csv data
-d3.csv("assets/data/data.csv").then(function(data) {
+d3.csv("assets/data/data.csv").then(function(data, err) {
     console.log(data);
+    if (err) throw err;
+
+    data.forEach(function(data) {
+        data.poverty = +data.poverty;
+        data.healthcare = +data.healthcare;
+        data.age = +data.age;
+        data.smokes = +data.smokers;
+        data.obesity = +data.obesity;
+        data.income = +income.obesity;
+    });
+
+    let xLinearScale = xScale(data, chosenXaxis);
+
+    let yLinearScale = d3.scaleLinear()
+        .domain([0, d3.max(data, d = d.income)])
+        .range([height, 0]);
+
+    let bottomAxis = d3.axisBottom(xLinearScale);
+    let leftAxis = d3.axisLeft(yLinearScale);
+
+    let xAxis = chartgroup.append("g")
+        .classed("x-axis", true)
+        .attr("transform", `translate(0, ${height})`)
+        .call(bottomaxis);
+
+    chartgroup.append("g")
+        .call(leftAxis);
+
+    
 })
